@@ -40,6 +40,32 @@ void GetD2(vector<vector<double>> &appo, vector<double> x, vector<double> y){
 }
 
 
+double forceX(vector<vector<double>> &appo, vector<double> x, int ind){
+    double force = 0;
+    
+    for(int i=0; i<x.size(); i++){ 
+        if(i == ind){ continue; }
+        force += (x[i] - x[ind])/pow((appo[ind][i] + pow(10, -6)), 1.5); 
+    }
+
+    return force;
+}
+
+
+double forceY(vector<vector<double>> &appo, vector<double> y, int ind){
+    double force = 0;
+    
+    for(int i=0; i<y.size(); i++){ 
+        if(i == ind){ continue; }
+        force += (y[i] - y[ind])/pow((appo[ind][i] + pow(10, -6)), 1.5); 
+    }
+
+    return force;
+}
+
+
+
+
 class Sistema{
     public:
         Sistema(CondIn &condin){
@@ -54,8 +80,13 @@ class Sistema{
             dist = GetD2(x, y);
         }
 
-        void evolvi(){
-            vector<double> pos
+        void evolvi(double dt){
+            xold = x;
+            yold = y;
+            for(int i=0; i<x.size(); i++){
+                x[i] = xold[i] + vx[i] * dt + forceX(dist, xold, i) * pow(dt, 2)/2; 
+                x[i] = xold[i] + vx[i] * dt + forceY(dist, yold, i) * pow(dt, 2)/2; 
+            }
         }
         
 
@@ -67,7 +98,7 @@ class Sistema{
         vector<double> x, xold, y, yold;
         vector<double> vx, vy;
 
-        vector<vector<double>> dist, old;
+        vector<vector<double>> dist, oldist;
 
 };
 
