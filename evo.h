@@ -8,6 +8,8 @@
 
 using namespace std;
 
+
+
 // Funzione per calcolare la distanza fra due particelle
 vector<vector<double>> GetD2(vector<Particella> conf){
     double x1, x2, y1, y2, dist2;
@@ -22,6 +24,7 @@ vector<vector<double>> GetD2(vector<Particella> conf){
 
             dist2 = pow((x2 - x1), 2) + pow((y2 - y1), 2);
             appo[i][j] = dist2;
+            appo[j][i] = dist2;
         }
     }
 
@@ -37,7 +40,8 @@ class Sistema{
             dist = GetD2(conf);
         }
 
-        
+
+
 
     protected:
         vector<Particella> conf;
