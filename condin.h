@@ -1,3 +1,6 @@
+#ifndef __condin__
+#define __condin__
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -71,3 +74,5 @@ class CondIn{
     protected:
         vector<Particella> sistema;
 };
+
+#endif
