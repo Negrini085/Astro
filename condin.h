@@ -70,6 +70,9 @@ class CondIn{
         fileout.close();
     }
 
+    // Metodo per estrarre sistema
+    vector<Particella> GetS(){ return sistema; }
+
 
     protected:
         vector<Particella> sistema;
