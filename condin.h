@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <random>
 #include <cmath>
@@ -55,7 +56,17 @@ class CondIn{
         }
     }
 
-    // Metodi Set/Get
+    // Metodo per stampare a file
+    void stampaSis(){
+        ofstream fileout;
+        fileout.open("condin.conf");
+
+        for(int i=0; i<sistema.size(); i++){
+            fileout << sistema[i].GetM() << "   " << sistema[i].GetR() << "   " << sistema[i].GetT() << "   " << sistema[i].GetVr() << "   " << sistema[i].GetVt() << endl;
+        }
+        fileout.close();
+    }
+
 
     protected:
         vector<Particella> sistema;
