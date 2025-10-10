@@ -13,15 +13,15 @@ using namespace std;
 
 
 // Funzione per calcolare la distanza fra due particelle
-vector<vector<double>> GetD2(vector<double> &x, vector<double> &y, double eps=1e-6){
+vector<vector<double>> GetD(vector<double> &x, vector<double> &y, double eps=1e-6){
     double dist2;
     vector<vector<double>> appo = vector<vector<double>>(x.size(), vector<double>(x.size(), 0.0));
     
     for(int i=0; i<x.size()-1; i++){
         for(int j=i+1; j<x.size(); j++){
             dist2 = pow((x[i] - x[j]), 2) + pow((y[i] - y[j]), 2);
-            appo[i][j] = dist2 + eps;
-            appo[j][i] = dist2 + eps;
+            appo[i][j] = sqrt(dist2 + eps);
+            appo[j][i] = appo[i][j];
         }
     }
 
@@ -29,14 +29,14 @@ vector<vector<double>> GetD2(vector<double> &x, vector<double> &y, double eps=1e
 }
 
 
-void GetD2(vector<vector<double>> &appo, vector<double> &x, vector<double> &y, double eps=1e-6){
+void GetD(vector<vector<double>> &appo, vector<double> &x, vector<double> &y, double eps=1e-6){
     double dist2;
     
     for(int i=0; i<x.size()-1; i++){
         for(int j=i+1; j<x.size(); j++){
             dist2 = pow((x[i] - x[j]), 2) + pow((y[i] - y[j]), 2);
-            appo[i][j] = dist2 + eps;
-            appo[j][i] = dist2 + eps;
+            appo[i][j] = sqrt(dist2 + eps);
+            appo[j][i] = appo[i][j];
         }
     }
 }
@@ -47,7 +47,7 @@ double forceX(vector<vector<double>> &appo, vector<double> &x, int ind){
     
     for(int i=0; i<x.size(); i++){ 
         if(i == ind){ continue; }
-        force += (x[i] - x[ind])/pow((appo[ind][i]), 1.5); 
+        force += (x[i] - x[ind])/(appo[ind][i]*appo[ind][i]*appo[ind][i]); 
     }
 
     return force;
@@ -59,7 +59,7 @@ double forceY(vector<vector<double>> &appo, vector<double> &y, int ind){
     
     for(int i=0; i<y.size(); i++){ 
         if(i == ind){ continue; }
-        force += (y[i] - y[ind])/pow((appo[ind][i]), 1.5); 
+        force += (y[i] - y[ind])/(appo[ind][i]*appo[ind][i]*appo[ind][i]); 
     }
 
     return force;
@@ -79,7 +79,7 @@ class Sistema{
                 vx.push_back(conf[i].GetVr()*cos(conf[i].GetT()) - conf[i].GetVt()*sin(conf[i].GetT()));
                 vy.push_back(conf[i].GetVr()*sin(conf[i].GetT()) + conf[i].GetVt()*cos(conf[i].GetT()));
             }
-            dist = GetD2(x, y);
+            dist = GetD(x, y);
         }
 
         void evolvi(double dt){
@@ -91,7 +91,7 @@ class Sistema{
             }
             
             oldist = dist;
-            GetD2(dist, x, y);
+            GetD(dist, x, y);
             for(int i=0; i<x.size(); i++){
                 vx[i] += (forceX(dist, x, i) + forceX(oldist, xold, i)) * dt/2;
                 vy[i] += (forceY(dist, y, i) + forceY(oldist, yold, i)) * dt/2;
@@ -102,8 +102,29 @@ class Sistema{
             for(int i=0; i<nstep; i++){
                 cout << "Passo: " << i+1 << endl;
                 evolvi(dt);
-                if(nstep%100 == 0 && nstep != 0){ stampaConf(i); }
+                energia();
+                if(i%100 == 0 && i != 0){ stampaConf(i); }
             }
+
+            stampaEne();
+        }
+
+        void energia(){
+            double kin = 0;
+            double pot = 0;
+
+            for(int i=0; i<vx.size(); i++){
+                kin += (vx[i]*vx[i] + vy[i]*vy[i])*0.5;
+            }
+
+            for(int i=0; i<vx.size(); i++){
+                for(int j=i+1; j<vx.size(); j++){
+                    pot -= 1/dist[i][j];
+                }
+            }
+            
+            enek.push_back(kin);
+            enep.push_back(pot);
         }
 
         void stampaConf(int ind){
@@ -115,15 +136,21 @@ class Sistema{
             }
             fileout.close();
         }
-        
 
+        void stampaEne(){
+            ofstream fileout;
 
-
+            fileout.open("ene.dat");
+            for(int i=0; i<enek.size(); i++){
+                fileout << enek[i] << " " << enep[i] << endl;
+            }
+            fileout.close();
+        }
 
 
     protected:
         vector<double> x, xold, y, yold;
-        vector<double> vx, vy;
+        vector<double> vx, vy, enek, enep;
 
         vector<vector<double>> dist, oldist;
 
